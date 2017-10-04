@@ -1,5 +1,11 @@
 # Define the settings of the machine used for the build
 machine:
+  java:
+    version: openjdk8
+  pre:
+    - curl -sSL https://s3.amazonaws.com/circle-downloads/install-circleci-docker.sh | bash -s -- 1.10.0
+  environment:
+    COMPOSE_PROJECT_NAME: kosmiobasepyspacy
   services:
     - docker
 
@@ -7,9 +13,10 @@ machine:
 dependencies:
   override:
     - docker info
+    - pip install -U docker-compose==1.6.0
     - docker-compose --version
     - docker-compose pull
-    - docker-compose build node
+    - docker-compose build py
 
 # Launch the test into the docker image
 test:
@@ -22,6 +29,5 @@ deployment:
     branch: master
     commands:
       - echo "{\"https://index.docker.io/v1/\":{\"auth\":\"<AUTH>\",\"email\":\"<EMAIL>\"}}" | sed "s/<EMAIL>/$HUB_EMAIL/;s/<AUTH>/$HUB_AUTH/" > ~/.dockercfg
-      - docker tag myproject_node sagacify/$CIRCLE_PROJECT_REPONAME:v$CIRCLE_BUILD_NUM
-      - docker tag sagacify/$CIRCLE_PROJECT_REPONAME:v$CIRCLE_BUILD_NUM sagacify/$CIRCLE_PROJECT_REPONAME:$latest
+      - docker tag kosmiobasepyspacy_py sagacify/$CIRCLE_PROJECT_REPONAME:v$CIRCLE_BUILD_NUM
       - docker push sagacify/$CIRCLE_PROJECT_REPONAME
